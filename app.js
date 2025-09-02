@@ -13,6 +13,42 @@ app.use(Cors())
 
 Mongoose.connect("mongodb+srv://Aleena:Honda25@cluster0.qntblc.mongodb.net/blogAppDb?retryWrites=true&w=majority&appName=Cluster0")
 
+// Sign In
+app.post("/signIn",async(req,res)=>{
+
+    let input = req.body
+    let result = userModel.find({email:req.body.email}).then(
+        (items)=>{
+            if (items.length>0) {
+
+                const passwordValidator=Bcrypt.compareSync(req.body.password,items[0].password)
+                if (passwordValidator) {
+                    jwt.sign({email:req.body.email},"blogApp",{expiresIn:"1d"},
+                    (error,token)=>{
+                        if (error) {
+                            res.json({"status":"error","errorMessage":error})
+                            
+                        } else {
+                            res.json({"status":"success","token":token,"userId":items[0]._id})
+                            
+                        }
+                    })
+                    
+                } else {
+                    res.json({"status":"Incorrect Password"})
+                }
+            } else {
+                res.json({"status":"Invalid Email Id"})
+                
+            }
+        }
+    ).catch()
+})
+
+
+
+
+// Sign Up
 app.post("/signup",async(req,res)=>{
     
     let input=req.body
